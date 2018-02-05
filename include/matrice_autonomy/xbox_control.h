@@ -8,6 +8,7 @@
 #include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/String.h>
 
 // DJI SDK includes
 #include <dji_sdk/DroneTaskControl.h>
@@ -22,10 +23,14 @@ class XboxControl
 {
 public:
      XboxControl();
+     void Takeoff();
+     void Land();
+     void ObtainControl();
 
 private:
-    void ControlCallback(const sensor_msgs::Joy::ConstPtr& joy);
+    void ControlCallback(const sensor_msgs::Joy::ConstPtr& joy); //Callback to use Xbox360 Controller to control Matrice 100
 
+    bool CheckM100();  // checks if drone is Matrice 100
     ros::NodeHandle nh;
     ros::Subscriber joy_sub; // Subscriber to the Joy Package
     ros::Publisher  vel_pub; // Velocity Publisher

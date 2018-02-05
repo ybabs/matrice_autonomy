@@ -1,13 +1,13 @@
-#include "xbox_control.h"
+#include "matrice_autonomy/xbox_control.h"
 
 XboxControl::XboxControl():
 linear(1),
 angular(2)
 {
-    nh.param("Linear Axis", linear, linear);
-    nh.param("Angular Axis", angular, angular);
-    nh.param("Linear Scale", linear_scale, linear_scale);
-    nh.param("Angular Scale", angular_scale, angular_scale);
+    nh.param("Linear_Axis", linear, linear);
+    nh.param("Angular_Axis", angular, angular);
+    nh.param("Linear_Scale", linear_scale, linear_scale);
+    nh.param("Angular_Scale", angular_scale, angular_scale);
 
     takeoff_pub = nh.advertise<std_msgs::String>("Takeoff", 1);
     land_pub = nh.advertise<std_msgs::String>("Landing", 1);
@@ -24,6 +24,7 @@ angular(2)
 
 void XboxControl::ControlCallback(const sensor_msgs::JoyConstPtr& joy)
 {
+
     sensor_msgs::Joy controlVelYawRate;
      uint8_t flag = (DJISDK::VERTICAL_VELOCITY   |
                 DJISDK::HORIZONTAL_VELOCITY |
@@ -65,6 +66,7 @@ void XboxControl::Takeoff()
     droneTaskControl.request.task = dji_sdk::DroneTaskControl::Request::TASK_TAKEOFF;
 
     drone_task_service.call(droneTaskControl);
+    ROS_INFO("DRONE TAKING OFF!");
 
     if(!droneTaskControl.response.result)
     {
@@ -94,6 +96,7 @@ void XboxControl::ObtainControl()
     dji_sdk::SDKControlAuthority authority;
     authority.request.control_enable = 1;
     ctrl_authority_service.call(authority);
+    ROS_INFO("Program has obtained control");
 }
 
 
@@ -102,8 +105,10 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "teleop_matrice");
     XboxControl xboxControl;
 
-
+    xboxControl.ObtainControl();
+    xboxControl.Takeoff();
 
     ros::spin();
+    return 0;
 
 }
