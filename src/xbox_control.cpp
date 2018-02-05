@@ -12,9 +12,9 @@ angular(2)
     takeoff_pub = nh.advertise<std_msgs::String>("Takeoff", 1);
     land_pub = nh.advertise<std_msgs::String>("Landing", 1);
 
-    joy_sub = nh.subscribe("Controller", 10, &XboxControl::ControlCallback, this);
+    joy_sub = nh.subscribe<sensor_msgs::Joy>("joy", 10, &XboxControl::ControlCallback, this);
     vel_pub = nh.advertise<sensor_msgs::Joy>("/dji_sdk/flight_control_setpoint_generic", 10);
-
+    rc_sub = nh.subscribe("/dji_sdk/rc", 100, &XboxControl::RC_Callback, this );
    // Start Basic Services
     ctrl_authority_service = nh.serviceClient<dji_sdk::SDKControlAuthority> ("dji_sdk/sdk_control_authority");
     drone_task_service         = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
@@ -97,6 +97,21 @@ void XboxControl::ObtainControl()
     authority.request.control_enable = 1;
     ctrl_authority_service.call(authority);
     ROS_INFO("Program has obtained control");
+}
+
+void XboxControl::RC_Callback(const sensor_msgs::JoyConstPtr& joy)
+{
+    roll_channel = joy->axes[0];
+    pitch_channel = joy->axes[1];
+    yaw_channel = joy->axes[2];
+    throttle_channel = joy->axes[3];
+    mode_switch = joy->axes[4];
+     landing_gear_switch = joy->axes[5];
+
+    ROS_INFO("Roll = %f, Pitch = %f, Yaw = %f, Throttle = %f, Mode = %f, landing = %f", roll_channel, 
+     pitch_channel, yaw_channel, throttle_channel, mode_switch, landing_gear_switch);
+     
+
 }
 
 

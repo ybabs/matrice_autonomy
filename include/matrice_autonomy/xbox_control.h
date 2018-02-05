@@ -29,13 +29,15 @@ public:
 
 private:
     void ControlCallback(const sensor_msgs::Joy::ConstPtr& joy); //Callback to use Xbox360 Controller to control Matrice 100
-
+    void RC_Callback(const sensor_msgs::Joy::ConstPtr& joy); // Subscribe to Lightbridge Data
     bool CheckM100();  // checks if drone is Matrice 100
+    
     ros::NodeHandle nh;
     ros::Subscriber joy_sub; // Subscriber to the Joy Package
     ros::Publisher  vel_pub; // Velocity Publisher
     ros::Publisher takeoff_pub; // publish takeoff message
     ros::Publisher land_pub; // Publish landing message
+    ros::Subscriber rc_sub; // Subscribing to the RC Channel
 
     ros::ServiceClient ctrl_authority_service;
     ros::ServiceClient drone_task_service;
@@ -45,6 +47,14 @@ private:
   /// Axes to control the Matrice
     int linear, angular;
     double linear_scale, angular_scale;
+
+    // Lightbridge 2 Accessible channels
+    double roll_channel;
+    double pitch_channel;
+    double yaw_channel;
+    double throttle_channel;
+    double mode_switch;
+    double landing_gear_switch;
 
     
 
