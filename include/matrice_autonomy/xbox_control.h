@@ -71,13 +71,9 @@ private:
     
    // sensor_msgs::Joy controlVelYawRate;
 
-    //????
-
     ros::NodeHandle nh;
     ros::Subscriber joy_sub; // Subscriber to the Joy Package
     ros::Publisher  vel_pub; // Velocity Publisher
-    ros::Publisher takeoff_pub; // publish takeoff message
-    ros::Publisher land_pub; // Publish landing message
     ros::Subscriber rc_sub; // Subscribing to the RC Channel
 
     ros::ServiceClient ctrl_authority_service;
@@ -87,6 +83,7 @@ private:
 
   /// Axes to control the Matrice
      Axes axes;
+     Buttons buttons;
 
   // Declaration of maximum control values
   MaxControlValues maxValues;
@@ -95,15 +92,13 @@ private:
   double current_yaw_velocity;
   double yaw_velocity_delta;
 
-
-
-    // Lightbridge 2 Accessible channels
-    int roll_channel;
-    int pitch_channel;
-    int yaw_channel;
-    int throttle_channel;
-    int mode_switch;
-    int landing_gear_switch;
+  // Lightbridge 2 Accessible channels
+  int roll_channel;
+  int pitch_channel;
+  int yaw_channel;
+  int throttle_channel;
+  int mode_switch;
+  int landing_gear_switch;
 
     
 

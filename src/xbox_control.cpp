@@ -32,9 +32,9 @@ XboxControl::XboxControl()
 
     nh.param("yaw_delta", yaw_velocity_delta, 0.05); // rad/s
 
-    /*Define buttons here later on */
-    takeoff_pub = nh.advertise<std_msgs::String>("Takeoff", 1);
-    land_pub = nh.advertise<std_msgs::String>("Landing", 1);
+    nh.param("Obtain_Control_button", buttons.obtainControl, 7); // Xbox 360 start button
+    nh.param("Takeoff_button", buttons.takeoff, 0); // Xbox 360 "A" button
+    nh.param("Land_button", buttons.land, 3); // Xbox 360 "Y" button
 
     joy_sub = nh.subscribe<sensor_msgs::Joy>("joy", 10, &XboxControl::ControlCallback, this);
     vel_pub = nh.advertise<sensor_msgs::Joy>("/dji_sdk/flight_control_setpoint_generic", 10);
@@ -49,7 +49,25 @@ XboxControl::XboxControl()
 void XboxControl::ControlCallback(const sensor_msgs::JoyConstPtr& joy)
 {
 
-  //  controlVelYawRate = *joy;
+    bool control_obtained = (joy->buttons[buttons.obtainControl] == 1); // Check is start button is pressed 
+    bool landing_pressed = (joy->buttons[buttons.land]== 1); // check if landing button pressed on controller
+    bool takeoff_pressed = (joy->buttons[buttons.takeoff] == 1); // Check if takeoff button is pressed on controller
+
+
+    if (control_obtained)
+    {
+        ObtainControl();
+    }
+
+    if (landing_pressed)
+    {
+        Land();
+    }
+
+    if(takeoff_pressed)
+    {
+        Takeoff();
+    }
     sensor_msgs::Joy controlVelYawRate;
 
 
@@ -57,7 +75,7 @@ void XboxControl::ControlCallback(const sensor_msgs::JoyConstPtr& joy)
     double joy_pitch = joy->axes[axes.pitch] * maxValues.pitch * axes.pitch_direction;
      // Add yaw later
     double joy_throttle = joy->axes[axes.throttle] * axes.throttle_direction;
-
+    double joy_yaw;
      uint8_t flag = (DJISDK::VERTICAL_VELOCITY   |
                 DJISDK::HORIZONTAL_VELOCITY |
                 DJISDK::YAW_RATE            |
@@ -66,8 +84,8 @@ void XboxControl::ControlCallback(const sensor_msgs::JoyConstPtr& joy)
 
     controlVelYawRate.axes.push_back(joy_roll);
     controlVelYawRate.axes.push_back(joy_pitch);
-    controlVelYawRate.axes.push_back(joy->axes[2]);
     controlVelYawRate.axes.push_back(joy_throttle);
+    controlVelYawRate.axes.push_back(joy->axes[2]);
     controlVelYawRate.axes.push_back(flag);
 
    vel_pub.publish(controlVelYawRate);
@@ -152,8 +170,8 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "teleop_matrice");
     XboxControl xboxControl;
 
-    xboxControl.ObtainControl();
-    xboxControl.Takeoff();
+    // xboxControl.ObtainControl();
+    // xboxControl.Takeoff();
 
     ros::spin();
     return 0;
