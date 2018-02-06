@@ -19,6 +19,41 @@
 #include <sensor_msgs/Joy.h>
 #include "dji_sdk/dji_sdk.h"
 
+#define PI (double) 3.141592653589793
+
+// Add the source of this from Zurich ASL..
+struct Axes{
+
+  int roll;
+  int pitch;
+  int throttle;
+  int roll_direction;
+  int pitch_direction;
+  int throttle_direction;
+
+};
+
+struct MaxControlValues
+{
+  double velocity_xy;
+  double roll;
+  double pitch;
+  double yaw_rate;
+  double throttle;
+
+};
+
+struct Buttons
+{
+  int takeoff;
+  int land;
+  int obtainControl;
+  int current_mode;
+  int yaw_left;
+  int yaw_right;
+
+};
+
 class XboxControl
 {
 public:
@@ -31,7 +66,13 @@ private:
     void ControlCallback(const sensor_msgs::Joy::ConstPtr& joy); //Callback to use Xbox360 Controller to control Matrice 100
     void RC_Callback(const sensor_msgs::Joy::ConstPtr& joy); // Subscribe to Lightbridge Data
     bool CheckM100();  // checks if drone is Matrice 100
+
+
     
+   // sensor_msgs::Joy controlVelYawRate;
+
+    //????
+
     ros::NodeHandle nh;
     ros::Subscriber joy_sub; // Subscriber to the Joy Package
     ros::Publisher  vel_pub; // Velocity Publisher
@@ -45,16 +86,24 @@ private:
     
 
   /// Axes to control the Matrice
-    int linear, angular;
-    double linear_scale, angular_scale;
+     Axes axes;
+
+  // Declaration of maximum control values
+  MaxControlValues maxValues;
+
+  //offset values
+  double current_yaw_velocity;
+  double yaw_velocity_delta;
+
+
 
     // Lightbridge 2 Accessible channels
-    double roll_channel;
-    double pitch_channel;
-    double yaw_channel;
-    double throttle_channel;
-    double mode_switch;
-    double landing_gear_switch;
+    int roll_channel;
+    int pitch_channel;
+    int yaw_channel;
+    int throttle_channel;
+    int mode_switch;
+    int landing_gear_switch;
 
     
 

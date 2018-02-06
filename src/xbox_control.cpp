@@ -1,14 +1,38 @@
 #include "matrice_autonomy/xbox_control.h"
 
-XboxControl::XboxControl():
-linear(1),
-angular(2)
+XboxControl::XboxControl()
 {
-    nh.param("Linear_Axis", linear, linear);
-    nh.param("Angular_Axis", angular, angular);
-    nh.param("Linear_Scale", linear_scale, linear_scale);
-    nh.param("Angular_Scale", angular_scale, angular_scale);
+    // Set axes for roll, pitch, yaw
+    nh.param("roll_axis", axes.roll, 0);
+    nh.param("pitch_axis", axes.pitch, 1);
+    nh.param("throttle_axes", axes.throttle, 3);
 
+    // Direction paramters
+    nh.param("roll_axis_direction", axes.roll_direction, -1);
+    nh.param("pitch_axis_direction", axes.pitch_direction, 1);
+    nh.param("throttle_axes_direction", axes.throttle_direction, 1);
+    
+    //define  maximum performance parameters.. Gimped for testing purposes
+    /* Real performance according to DJI Datasheet:
+
+    Max Angular Pitch Velocity = 5.23598 rad/s
+    Max Angular Yaw Velocity = 2.61799 rad/s
+    Max tilt angle = 35 degress
+    Max Ascent Speed = 5 m/s
+    Max Descent Speed = 4 m/s
+    Max Wind Resistance = 10 m/s
+    Max Speed 22/17 ms (ATTI/GPS) with no payload and no wind
+    
+    */
+    
+    nh.param("max_xy_velocity", maxValues.velocity_xy, 1.0);
+    nh.param("max_roll", maxValues.roll, 20 * PI / 180.0);
+    nh.param("max_pitch", maxValues.pitch, 20 * PI / 180.0);
+    nh.param("max_yaw_rate", maxValues.yaw_rate, 20 * PI / 180.0);
+
+    nh.param("yaw_delta", yaw_velocity_delta, 0.05); // rad/s
+
+    /*Define buttons here later on */
     takeoff_pub = nh.advertise<std_msgs::String>("Takeoff", 1);
     land_pub = nh.advertise<std_msgs::String>("Landing", 1);
 
@@ -25,17 +49,25 @@ angular(2)
 void XboxControl::ControlCallback(const sensor_msgs::JoyConstPtr& joy)
 {
 
+  //  controlVelYawRate = *joy;
     sensor_msgs::Joy controlVelYawRate;
+
+
+    double joy_roll = joy->axes[axes.roll] * maxValues.roll * axes.roll_direction;
+    double joy_pitch = joy->axes[axes.pitch] * maxValues.pitch * axes.pitch_direction;
+     // Add yaw later
+    double joy_throttle = joy->axes[axes.throttle] * axes.throttle_direction;
+
      uint8_t flag = (DJISDK::VERTICAL_VELOCITY   |
                 DJISDK::HORIZONTAL_VELOCITY |
                 DJISDK::YAW_RATE            |
                 DJISDK::HORIZONTAL_GROUND   |
                 DJISDK::STABLE_ENABLE);
 
-     controlVelYawRate.axes.push_back(joy->axes[0]);
-    controlVelYawRate.axes.push_back(joy->axes[1]);
+    controlVelYawRate.axes.push_back(joy_roll);
+    controlVelYawRate.axes.push_back(joy_pitch);
     controlVelYawRate.axes.push_back(joy->axes[2]);
-    controlVelYawRate.axes.push_back(joy->axes[3]);
+    controlVelYawRate.axes.push_back(joy_throttle);
     controlVelYawRate.axes.push_back(flag);
 
    vel_pub.publish(controlVelYawRate);
@@ -106,10 +138,10 @@ void XboxControl::RC_Callback(const sensor_msgs::JoyConstPtr& joy)
     yaw_channel = joy->axes[2];
     throttle_channel = joy->axes[3];
     mode_switch = joy->axes[4];
-     landing_gear_switch = joy->axes[5];
+    landing_gear_switch = joy->axes[5];
 
-    ROS_INFO("Roll = %f, Pitch = %f, Yaw = %f, Throttle = %f, Mode = %f, landing = %f", roll_channel, 
-     pitch_channel, yaw_channel, throttle_channel, mode_switch, landing_gear_switch);
+   // ROS_INFO("Roll = %d, Pitch = %d, Yaw = %d, Throttle = %d, Mode = %d, landing = %d", roll_channel, 
+  //  pitch_channel, yaw_channel, throttle_channel, mode_switch, landing_gear_switch);
      
 
 }
