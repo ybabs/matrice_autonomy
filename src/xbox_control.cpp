@@ -2,10 +2,13 @@
 
 XboxControl::XboxControl()
 {
+
+    //TODO Figure out why pitch is using LT and RT instead of right analog stick
     // Set axes for roll, pitch, yaw
-    nh.param("roll_axis", axes.roll, 0);
-    nh.param("pitch_axis", axes.pitch, 1);
-    nh.param("throttle_axes", axes.throttle, 3);
+    nh.param("roll_axis", axes.roll,2 ); // Left/right for right stick
+    nh.param("pitch_axis", axes.pitch, 3); // up down right stick 
+    nh.param("throttle_axes", axes.throttle, 1);  // Joy axis for up/down left stick.
+    nh.param("yaw_axes",axes.yaw, 0 );
 
     // Direction paramters
     nh.param("roll_axis_direction", axes.roll_direction, -1);
@@ -25,10 +28,10 @@ XboxControl::XboxControl()
     
     */
     
-    nh.param("max_xy_velocity", maxValues.velocity_xy, 1.0);
-    nh.param("max_roll", maxValues.roll, 20 * PI / 180.0);
-    nh.param("max_pitch", maxValues.pitch, 20 * PI / 180.0);
-    nh.param("max_yaw_rate", maxValues.yaw_rate, 20 * PI / 180.0);
+    nh.param("max_xy_velocity", maxValues.velocity_xy, 10.0);
+    nh.param("max_roll", maxValues.roll, 300 * PI / 180.0);
+    nh.param("max_pitch", maxValues.pitch, 300 * PI / 180.0);
+    nh.param("max_yaw_rate", maxValues.yaw_rate, 150 * PI / 180.0);
 
     nh.param("yaw_delta", yaw_velocity_delta, 0.05); // rad/s
 
@@ -71,21 +74,27 @@ void XboxControl::ControlCallback(const sensor_msgs::JoyConstPtr& joy)
     sensor_msgs::Joy controlVelYawRate;
 
 
-    double joy_roll = joy->axes[axes.roll] * maxValues.roll * axes.roll_direction;
+    // double joy_roll = joy->axes[axes.roll] * maxValues.roll * axes.roll_direction;
+    // double joy_pitch = joy->axes[axes.pitch] * maxValues.pitch * axes.pitch_direction;
+    // double joy_throttle = joy->axes[axes.throttle] * axes.throttle_direction;
+
+     double joy_roll = joy->axes[axes.roll] * maxValues.roll ;
     double joy_pitch = joy->axes[axes.pitch] * maxValues.pitch * axes.pitch_direction;
-     // Add yaw later
-    double joy_throttle = joy->axes[axes.throttle] * axes.throttle_direction;
-    double joy_yaw;
+    double joy_throttle = joy->axes[axes.throttle] ;
+    double joy_yaw = joy->axes[axes.yaw] * maxValues.yaw_rate;
      uint8_t flag = (DJISDK::VERTICAL_VELOCITY   |
                 DJISDK::HORIZONTAL_VELOCITY |
                 DJISDK::YAW_RATE            |
                 DJISDK::HORIZONTAL_GROUND   |
                 DJISDK::STABLE_ENABLE);
 
-    controlVelYawRate.axes.push_back(joy_roll);
+  /* 
+   axes 0 is pitch, axis 1 is roll, 
+  */
     controlVelYawRate.axes.push_back(joy_pitch);
+    controlVelYawRate.axes.push_back(joy_roll);
     controlVelYawRate.axes.push_back(joy_throttle);
-    controlVelYawRate.axes.push_back(joy->axes[2]);
+    controlVelYawRate.axes.push_back(joy_yaw);
     controlVelYawRate.axes.push_back(flag);
 
    vel_pub.publish(controlVelYawRate);

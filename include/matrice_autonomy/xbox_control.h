@@ -30,6 +30,7 @@ struct Axes{
   int roll_direction;
   int pitch_direction;
   int throttle_direction;
+  int yaw;
 
 };
 
