@@ -91,8 +91,8 @@ void XboxControl::ControlCallback(const sensor_msgs::JoyConstPtr& joy)
   /* 
    axes 0 is pitch, axis 1 is roll, 
   */
-    controlVelYawRate.axes.push_back(joy_pitch);
     controlVelYawRate.axes.push_back(joy_roll);
+    controlVelYawRate.axes.push_back(joy_pitch);
     controlVelYawRate.axes.push_back(joy_throttle);
     controlVelYawRate.axes.push_back(joy_yaw);
     controlVelYawRate.axes.push_back(flag);
@@ -178,9 +178,6 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "teleop_matrice");
     XboxControl xboxControl;
-
-    // xboxControl.ObtainControl();
-    // xboxControl.Takeoff();
 
     ros::spin();
     return 0;
