@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Joy Node for Xbox Controller -->
+    <node respawn="true" pkg= "joy" type="joy_node" 
+          name="matrice_joy">
+        <param name="dev" type="string" value="/dev/input/js0"/>
+        <param name = "deadzone" value="0.12"/>
+
+    </node>
+
+    <!-- Launch the matrice xbox control node -->
+    <node name="Matrice_Launch" pkg="matrice_autonomy" 
+          type="xbox_control" output="screen">
+
+    </node>
+
+
+
+</launch>
