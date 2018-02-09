@@ -6,11 +6,10 @@
 #include <geometry_msgs/QuaternionStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/NavSatFix.h>
-#include <sensor_msgs/BatteryState>
+#include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Float32.h>
-
 
 
 // Controller Includes
@@ -41,22 +40,25 @@
 
 class FlightData
 {
+
+  public:
+  FlightData();
   private:
   // global position of MAtrice M100 based on WGS84 System (Lat, Lon, Alt (m))
   sensor_msgs::NavSatFix current_gps_location; 
   // GPS Signal Health between 0 and 5 being the best
-  std_msgs::UInt8 gps_health;
+  uint8_t gps_health;
   //IMU Data in FLU(Forward Left Up Frame) (raw gyro, Raw Acc, and attitude estimation at 100Hz)
   sensor_msgs::Imu imu_data;
   // Flight status of the UAV 
-  std_msgs::UInt8 flight_status;
+  uint8_t flight_status;
 
   // Height above takeoff
   std_msgs::Float32 takeoff_height;
   // Drone Attitude as a quaternion
-  geometry_msgs::QuaternionStamped attitude_data;
+  geometry_msgs::Quaternion attitude_data;
   // Battery State
-  sensor_msgs::BatteryState battery_state;
+  int batteryLeft;
   
 
     // Callbacks to return flight data
@@ -79,6 +81,7 @@ class FlightData
  // battery state callback
  void batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg);
 
+
  /* Subscribers */
    ros::Subscriber attitude_sub;
    ros::Subscriber gps_sub;
@@ -87,6 +90,8 @@ class FlightData
    ros::Subscriber imu_sub;
    ros::Subscriber lightbridge_sub;
    ros::Subscriber batteryState_sub;
+
+
 
    // RC Controller Data
    Lightbridge lightbridge;

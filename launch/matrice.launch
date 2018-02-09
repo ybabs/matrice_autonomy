@@ -10,9 +10,14 @@
     </node>
 
     <!-- Launch the matrice xbox control node -->
-    <node name="Matrice_Launch" pkg="matrice_autonomy" 
+   <!--> <node name="Matrice_Launch" pkg="matrice_autonomy" 
           type="xbox_control" output="screen">
 
+    </node> -->
+
+    <!-- Sensor Data Node -->
+    <node name = "Matrice_Data" pkg = "matrice_autonomy"
+          type="flight_data" output = "screen">
     </node>
 
 

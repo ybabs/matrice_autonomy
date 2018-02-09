@@ -173,7 +173,6 @@ void XboxControl::RC_Callback(const sensor_msgs::JoyConstPtr& joy)
 
 }
 
-
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "teleop_matrice");
