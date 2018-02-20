@@ -39,7 +39,7 @@
                 "${workspaceRoot}/include",
                 "/opt/ros/kinetic/include",
                 "/home/rosboxone/catkin_ws/devel/include",
-                "/home/rosboxone/catkin_ws/src/Onboard-SDK-ROS/dji_sdk/include",
+                "/home/rosboxone/catkin_ws/src/DJI-ROS-SDK/dji_sdk/include",
                 "${workspaceRoot}/include/matrice_autonomy"
             ],
             "defines": [],

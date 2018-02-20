@@ -19,6 +19,11 @@ void FlightData::attitude_callback(const geometry_msgs::QuaternionStamped::Const
     
 }
 
+sensor_msgs::NavSatFix FlightData::GetGPSPosition()
+{
+    //TODO
+}
+
 void FlightData::batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg)
 {
   batteryLeft = msg->percentage;

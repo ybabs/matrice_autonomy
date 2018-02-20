@@ -11,7 +11,6 @@
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Float32.h>
 
-
 // Controller Includes
 #include <sensor_msgs/Joy.h>
 #include <tf/tf.h>
@@ -20,9 +19,20 @@
 #include <dji_sdk/DroneTaskControl.h>
 #include <dji_sdk/SDKControlAuthority.h>
 #include <dji_sdk/QueryDroneVersion.h>
+#include <dji_sdk/MissionWpAction.h>
+#include <dji_sdk/MissionWpUpload.h>
+#include <dji_sdk/Activation.h>
+
+
+//DJI OSDK Includes
+#include <djiosdk/dji_vehicle.hpp>
+
+
+#include "dji_sdk/dji_sdk.h"
 
 #define EARTH_RADIUS (double)6378137.0
 #define PI (double) 3.141592653589793
+
 
   // Lightbridge 2 Accessible channels
   struct Lightbridge
@@ -43,6 +53,9 @@ class FlightData
 
   public:
   FlightData();
+
+  // accessor to return GPS Position
+  sensor_msgs::NavSatFix GetGPSPosition();
   private:
   // global position of MAtrice M100 based on WGS84 System (Lat, Lon, Alt (m))
   sensor_msgs::NavSatFix current_gps_location; 
@@ -80,6 +93,9 @@ class FlightData
  void checkLightbridgeControlMode();
  // battery state callback
  void batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg);
+
+
+
 
 
  /* Subscribers */
