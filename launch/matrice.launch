@@ -16,9 +16,9 @@
     </node> -->
 
     <!-- Sensor Data Node -->
-    <node name = "Matrice_Data" pkg = "matrice_autonomy"
+    <!--<node name = "Matrice_Data" pkg = "matrice_autonomy"
           type="flight_data" output = "screen">
-    </node> 
+    </node> -->
 
     <!--Mission Control -->
         <node name = "Matrice_Data" pkg = "matrice_autonomy"
