@@ -2,12 +2,12 @@
 <launch>
 
   <!-- Joy Node for Xbox Controller -->
-    <node respawn="true" pkg= "joy" type="joy_node" 
+    <!--<node respawn="true" pkg= "joy" type="joy_node" 
           name="matrice_joy">
         <param name="dev" type="string" value="/dev/input/js0"/>
         <param name = "deadzone" value="0.12"/>
 
-    </node>
+    </node> -->
 
     <!-- Launch the matrice xbox control node -->
    <!--> <node name="Matrice_Launch" pkg="matrice_autonomy" 
@@ -18,6 +18,11 @@
     <!-- Sensor Data Node -->
     <node name = "Matrice_Data" pkg = "matrice_autonomy"
           type="flight_data" output = "screen">
+    </node> 
+
+    <!--Mission Control -->
+        <node name = "Matrice_Data" pkg = "matrice_autonomy"
+          type="mission_control" output = "screen">
     </node>
 
 

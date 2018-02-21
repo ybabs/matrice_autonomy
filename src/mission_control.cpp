@@ -1,4 +1,4 @@
-#include "mission_control.h"
+#include "matrice_autonomy/mission_control.h"
 
 using namespace DJI::OSDK;
 
@@ -6,6 +6,7 @@ using namespace DJI::OSDK;
 
 MissionControl::MissionControl()
 {
+    
     // Start Basic Services
     ctrl_authority_service = nh.serviceClient<dji_sdk::SDKControlAuthority> ("dji_sdk/sdk_control_authority");
     drone_task_service     = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
@@ -14,6 +15,16 @@ MissionControl::MissionControl()
     waypoint_action_service  = nh.serviceClient<dji_sdk::MissionWpAction>("dji_sdk/mission_waypoint_action");
     drone_activation_service = nh.serviceClient<dji_sdk::Activation>("dji_sdk/activation");
 
+   // Activate APP;
+    Activate();
+
+    // Call Control Authority
+    ObtainControl();
+
+    uint8_t waypointSides = 6;
+    int responseTimeout = 1;
+    
+    RunWaypointMission(waypointSides, responseTimeout);
 }
 
 void MissionControl::Activate()
@@ -25,6 +36,11 @@ void MissionControl::Activate()
    if(!activation.response.result)
    {
        ROS_ERROR("Drone app not activated. Please check your app key");
+   }
+
+   else
+   {
+       ROS_INFO("Activation Successful");
    }
 
    
@@ -98,7 +114,29 @@ std::vector<DJI::OSDK::WayPointSettings> MissionControl::GeneratePolygon(WayPoin
 
     return waypointList;
     
-}    
+}  
+
+
+ std::vector<DJI::OSDK::WayPointSettings> MissionControl:: CreateWaypoints(int numWaypoints, DJI::OSDK::float64_t distanceIncrement, DJI::OSDK::float32_t start_altitude)
+ {
+     // starting waypoint
+     WayPointSettings startWaypoint;
+     SetWayPointDefaults(&startWaypoint);
+
+      sensor_msgs::NavSatFix gps_pos = flightData.GetGPSPosition();
+    
+    // set starting waypoint latitude as current waypoint
+     startWaypoint.latitude = gps_pos.latitude;
+     startWaypoint.longitude = gps_pos.longitude;
+     startWaypoint.altitude = gps_pos.altitude;
+
+     ROS_INFO("Waypoint created at Lat: %f , Lon: %f , Alt: %f \n", gps_pos.latitude, gps_pos.longitude, gps_pos.altitude );
+
+     std::vector<DJI::OSDK::WayPointSettings> waypointVector = GeneratePolygon(&startWaypoint, distanceIncrement, start_altitude);
+
+     return waypointVector;
+
+ }
 
 void MissionControl::UploadWaypoints(std::vector<DJI::OSDK::WayPointSettings>& waypointList, int responseTimeout, dji_sdk::MissionWaypointTask& waypointTask)
 {
@@ -119,6 +157,102 @@ void MissionControl::UploadWaypoints(std::vector<DJI::OSDK::WayPointSettings>& w
 
         waypointTask.mission_waypoint.push_back(waypoint);
     }
+}
+
+bool MissionControl::RunWaypointMission(uint8_t numWaypoints, int responseTimeout)
+{
+
+    // Initialise Waypoint Mission:
+    dji_sdk::MissionWaypointTask waypointTask;
+    SetWayPointInitDefaults(waypointTask);
+
+    // create Waypoints here::
+    //TODO: Call another method here to generate number of waypoints
+    float64_t increment = 0.000001 / PI * 180;
+    float32_t start_altitude = 10;
+    ROS_INFO( "Creating waypoints ... \n");
+
+    std::vector<WayPointSettings> generatedWaypoints = CreateWaypoints(numWaypoints, increment, start_altitude);
+
+    /// Upload Waypoints;
+    ROS_INFO("Uploading Waypoints ... \n");
+    UploadWaypoints(generatedWaypoints, responseTimeout, waypointTask);
+
+    // initialise Mission:
+    ROS_INFO("Initialising Mission ... \n");
+    if(InitWayPointMission(waypointTask) != true)
+    {
+       return false;
+    }
+
+    // Start Waypoint Mission
+    MissionAction(DJI_MISSION_TYPE::WAYPOINT, MISSION_ACTION::START);
+
+    return true;
+
+
+}
+
+void MissionControl:: MissionAction(DJI::OSDK::DJI_MISSION_TYPE type, DJI::OSDK::MISSION_ACTION action)
+{
+    dji_sdk::MissionWpAction waypointMissionAction;
+
+    if (type == DJI::OSDK::WAYPOINT)
+    {
+        waypointMissionAction.request.action = action;
+        waypoint_action_service.call(waypointMissionAction);
+
+        if (!waypointMissionAction.response.result)
+        {
+            ROS_WARN( "Acknowledgment Info Set = %i id = %i", waypointMissionAction.response.cmd_set, waypointMissionAction.response.cmd_id);
+
+             ROS_INFO("ACK.data: %i", waypointMissionAction.response.ack_data);
+
+             ROS_ERROR("Mission start command not sent");
+
+        }
+
+        else
+        {
+            ROS_INFO("Action set");
+        }
+
+    }
+
+    else
+    {
+        ROS_ERROR("Mission Type not supported");
+    }
+
+}
+
+
+bool MissionControl::InitWayPointMission(dji_sdk::MissionWaypointTask& waypointTask)
+{
+
+   dji_sdk::MissionWpUpload uploadWaypointMission;
+   uploadWaypointMission.request.waypoint_task = waypointTask;
+
+   waypoint_upload_service.call(uploadWaypointMission);
+   if(!uploadWaypointMission.response.result)
+   {
+       ROS_WARN ( "Acknowledgment Info Set = %i id = %i", uploadWaypointMission.response.cmd_set, uploadWaypointMission.response.cmd_id);
+
+       ROS_INFO("ACK.data: %i", uploadWaypointMission.response.ack_data);
+
+        ROS_ERROR("Couldn't upload waypoints");
+
+        return false;
+
+   }
+
+   else
+   {
+        ROS_INFO("Waypoints uploaded successfully");
+        return true;
+   }
+
+
 }
 
 
@@ -193,12 +327,32 @@ void MissionControl::ObtainControl()
     dji_sdk::SDKControlAuthority authority;
     authority.request.control_enable = 1;
     ctrl_authority_service.call(authority);
+    if(authority.response.result)
+    {
     ROS_INFO("Program has obtained control");
+    }
+
+    else
+    {
+        if(authority.response.ack_data == 3 && authority.response.cmd_set == 1 && authority.response.cmd_id == 0)
+        {
+            // Make this recursive?
+            // Possibly call obtainControl again
+            ROS_INFO("Call control Authority again");
+        }
+
+        else
+        {
+            ROS_ERROR("Failed to obtain control authority");
+        }
+    }
 }
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "teleop_matrice");
+    ros::init(argc, argv, "Mission Control");
+
+    MissionControl missionControl;
 
     ros::spin();
     return 0;

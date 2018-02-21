@@ -36,11 +36,18 @@ target_link_libraries(xbox_control ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
 add_dependencies(xbox_control dji_sdk_generate_messages_cpp)
 
 # specify executables for the sensor data collection package
-add_executable(flight_data src/flight_data.cpp)
+#add_executable(flight_data src/flight_data.cpp)
 
-target_link_libraries(flight_data ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
+#target_link_libraries(flight_data ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
 
-add_dependencies(flight_data dji_sdk_generate_messages_cpp)
+#add_dependencies(flight_data dji_sdk_generate_messages_cpp)
+
+# specify executables for the sensor data collection package
+add_executable(mission_control src/mission_control.cpp src/flight_data.cpp)
+
+target_link_libraries(mission_control ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
+
+add_dependencies(mission_control dji_sdk_generate_messages_cpp)
 
 ## Mark cpp header files for installation
 

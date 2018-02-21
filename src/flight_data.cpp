@@ -21,7 +21,9 @@ void FlightData::attitude_callback(const geometry_msgs::QuaternionStamped::Const
 
 sensor_msgs::NavSatFix FlightData::GetGPSPosition()
 {
-    //TODO
+
+    return current_gps_location;
+  
 }
 
 void FlightData::batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg)
@@ -106,12 +108,12 @@ void FlightData::checkLightbridgeControlMode()
 
 }
 
-int main(int argc, char** argv)
-{
-    ros::init(argc, argv, "flight_collect");
-    FlightData flightdata;
+// int main(int argc, char** argv)
+// {
+//     ros::init(argc, argv, "flight_collect");
+//     FlightData flightdata;
 
-    ros::spin();
-    return 0;
+//     ros::spin();
+//     return 0;
 
-}
+// }

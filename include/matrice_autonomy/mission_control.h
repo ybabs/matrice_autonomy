@@ -1,7 +1,7 @@
 #ifndef MISSION_CONTROL_H
 #define MISSION_CONTROL_H
 
-#include "flight_data.h"
+#include "matrice_autonomy/flight_data.h"
 #include <iostream>
 
 // Include other services.
@@ -30,7 +30,9 @@ public:
     void GoHome();
     void MonitoredTakeoff();
     void ObtainControl();
-    void InitWayPointMission(dji_sdk::MissionWaypointTask& waypointTask);
+    bool InitWayPointMission(dji_sdk::MissionWaypointTask& waypointTask);
+
+    void MissionAction(DJI::OSDK::DJI_MISSION_TYPE type, DJI::OSDK::MISSION_ACTION action);
 
     void SetWayPointDefaults(DJI::OSDK::WayPointSettings* m_waypoint);
 
@@ -44,6 +46,8 @@ public:
 
     bool RunWaypointMission(uint8_t numWaypoints, int responseTimeout);
 
+    FlightData flightData;
+
 
  private:
     ros::NodeHandle nh;
@@ -53,6 +57,8 @@ public:
     ros::ServiceClient waypoint_upload_service;
     ros::ServiceClient waypoint_action_service;
     ros::ServiceClient drone_activation_service;
+
+
     
 
     bool CheckM100();  // checks if drone is Matrice 100
