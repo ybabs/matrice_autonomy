@@ -6,7 +6,7 @@ using namespace DJI::OSDK;
 
 MissionControl::MissionControl()
 {
-    
+
     // Start Basic Services
     ctrl_authority_service = nh.serviceClient<dji_sdk::SDKControlAuthority> ("dji_sdk/sdk_control_authority");
     drone_task_service     = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
@@ -21,11 +21,15 @@ MissionControl::MissionControl()
     // Call Control Authority
     ObtainControl();
 
-    uint8_t waypointSides = 6;
-    int responseTimeout = 1;
     
-    RunWaypointMission(waypointSides, responseTimeout);
 }
+
+void MissionControl::SetGPSPosition(sensor_msgs::NavSatFix set_gps_pos)
+{
+    gps_pos = set_gps_pos;
+  
+}
+
 
 void MissionControl::Activate()
 {
@@ -123,7 +127,7 @@ std::vector<DJI::OSDK::WayPointSettings> MissionControl::GeneratePolygon(WayPoin
      WayPointSettings startWaypoint;
      SetWayPointDefaults(&startWaypoint);
 
-      sensor_msgs::NavSatFix gps_pos = flightData.GetGPSPosition();
+     // sensor_msgs::NavSatFix gps_pos = flightData->GetGPSPosition();
     
     // set starting waypoint latitude as current waypoint
      startWaypoint.latitude = gps_pos.latitude;
@@ -351,10 +355,25 @@ void MissionControl::ObtainControl()
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "Mission Control");
+     
+
+    FlightData flightData;
+
 
     MissionControl missionControl;
 
+    ros::spinOnce();
+
+    missionControl.SetGPSPosition(flightData.GetGPSPosition());
+
+    uint8_t waypointSides = 6;
+    int responseTimeout = 1;
+    
+    missionControl.RunWaypointMission(waypointSides, responseTimeout);
+    
     ros::spin();
+
+   
     return 0;
 
 }

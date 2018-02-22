@@ -22,14 +22,16 @@ void FlightData::attitude_callback(const geometry_msgs::QuaternionStamped::Const
 sensor_msgs::NavSatFix FlightData::GetGPSPosition()
 {
 
+    ROS_INFO("GPS Getter %f , %f , %f",  current_gps_location.latitude,  current_gps_location.longitude, current_gps_location.altitude);
     return current_gps_location;
+    
   
 }
 
 void FlightData::batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg)
 {
   batteryLeft = msg->percentage;
-  ROS_INFO("Battery Life: %d %%", batteryLeft);
+  ROS_INFO_ONCE("Battery Life: %d %%", batteryLeft);
 }
 
 void FlightData::gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
@@ -38,7 +40,7 @@ void FlightData::gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
   current_gps_location.longitude = msg->longitude;
   current_gps_location.altitude = msg->altitude;
 
-  ROS_INFO("GPS Location %f , %f , %f",  current_gps_location.latitude,  current_gps_location.longitude, current_gps_location.altitude);
+  ROS_INFO_ONCE("GPS Location %f , %f , %f",  current_gps_location.latitude,  current_gps_location.longitude, current_gps_location.altitude);
 
 }
 

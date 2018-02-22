@@ -46,9 +46,11 @@ public:
 
     bool RunWaypointMission(uint8_t numWaypoints, int responseTimeout);
 
-    FlightData flightData;
+    void SetGPSPosition(sensor_msgs::NavSatFix);
+    
+    
 
-
+    
  private:
     ros::NodeHandle nh;
     ros::ServiceClient ctrl_authority_service;
@@ -57,6 +59,8 @@ public:
     ros::ServiceClient waypoint_upload_service;
     ros::ServiceClient waypoint_action_service;
     ros::ServiceClient drone_activation_service;
+
+    sensor_msgs::NavSatFix gps_pos;
 
 
     

@@ -53,9 +53,11 @@ class FlightData
 
   public:
   FlightData();
+   //sensor_msgs::NavSatFix current_gps_location; 
 
   // accessor to return GPS Position
   sensor_msgs::NavSatFix GetGPSPosition();
+
   private:
   // global position of MAtrice M100 based on WGS84 System (Lat, Lon, Alt (m))
   sensor_msgs::NavSatFix current_gps_location; 
@@ -93,9 +95,6 @@ class FlightData
  void checkLightbridgeControlMode();
  // battery state callback
  void batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg);
-
-
-
 
 
  /* Subscribers */

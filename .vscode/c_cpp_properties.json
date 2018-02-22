@@ -40,7 +40,8 @@
                 "/opt/ros/kinetic/include",
                 "/home/rosboxone/catkin_ws/devel/include",
                 "/home/rosboxone/catkin_ws/src/DJI-ROS-SDK/dji_sdk/include",
-                "${workspaceRoot}/include/matrice_autonomy"
+                "${workspaceRoot}/include/matrice_autonomy",
+                "/home/rosboxone/catkin_ws/src/Onboard-SDK-ROS/dji_sdk/include"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
