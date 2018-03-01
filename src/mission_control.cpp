@@ -38,11 +38,11 @@ void MissionControl::gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 
 }
 
-// void MissionControl::SetGPSPosition(sensor_msgs::NavSatFix set_gps_pos)
-// {
-//     gps_pos = set_gps_pos;
+void MissionControl::SetGPSPosition(sensor_msgs::NavSatFix set_gps_pos)
+{
+    gps_pos = set_gps_pos;
   
-// }
+}
 
 
 void MissionControl::Activate()
@@ -96,38 +96,6 @@ void MissionControl::SetWayPointInitDefaults(dji_sdk::MissionWaypointTask& waypo
 
 }
 
-// std::vector<DJI::OSDK::WayPointSettings> MissionControl::GeneratePolygon(WayPointSettings* startData, float64_t increment, int numWaypoints)
-// {
-//     // Vector to store waypoints in:
-
-//     std::vector<DJI::OSDK::WayPointSettings> waypointsList;
-
-//     float64_t angle = 2 * M_PI / numWaypoints;
-
-//     // First Waypoint
-//     startData->index = 0;
-//     waypointsList.push_back(*startData);
-
-//     for(int i = 1; i < numWaypoints; i++)
-//     {
-//       WayPointSettings curr_waypoint;
-//       WayPointSettings* prev_waypoint = &waypointsList[i - 1];
-//       SetWayPointDefaults(&curr_waypoint);
-//       curr_waypoint.index = i;
-//       curr_waypoint.latitude = (prev_waypoint->latitude + (increment * cos(i * angle)));
-//       curr_waypoint.longitude = (prev_waypoint->longitude + (increment * sin(i * angle)));
-//       curr_waypoint.altitude = (prev_waypoint->altitude + 1);
-//       waypointsList.push_back(curr_waypoint);
-//     }
-
-// // Add first waypoint to the vector
-//     startData->index = numWaypoints;
-//     waypointsList.push_back(*startData);
-
-//     // return waypoints List
-//     return waypointsList;
-    
-// }
 std::vector<DJI::OSDK::WayPointSettings> MissionControl::GeneratePolygon(WayPointSettings* startData, float64_t increment, int numWaypoints)
 {
     // Circular waypoint Polygon could be drawn here as well
@@ -188,38 +156,6 @@ std::vector<DJI::OSDK::WayPointSettings> MissionControl::GeneratePolygon(WayPoin
 
  }
 
-// std::vector<DJI::OSDK::WayPointSettings> MissionControl:: GeneratePolygon(WayPointSettings* start_data, float64_t increment,
-//                          int num_wp)
-// {
-//   // Let's create a vector to store our waypoints in.
-//   std::vector<DJI::OSDK::WayPointSettings> wp_list;
-
-//   // Some calculation for the polygon
-//   float64_t extAngle = 2 * M_PI / num_wp;
-
-//   // First waypoint
-//   start_data->index = 0;
-//   wp_list.push_back(*start_data);
-
-//   // Iterative algorithm
-//   for (int i = 1; i < num_wp; i++)
-//   {
-//     WayPointSettings  wp;
-//     WayPointSettings* prevWp = &wp_list[i - 1];
-//     SetWayPointDefaults(&wp);
-//     wp.index     = i;
-//     wp.latitude  = (prevWp->latitude + (increment * cos(i * extAngle)));
-//     wp.longitude = (prevWp->longitude + (increment * sin(i * extAngle)));
-//     wp.altitude  = (prevWp->altitude + 1);
-//     wp_list.push_back(wp);
-//   }
-
-//   // Come back home
-//   start_data->index = num_wp;
-//   wp_list.push_back(*start_data);
-
-//   return wp_list;
-// }
 
 
 void MissionControl::UploadWaypoints(std::vector<DJI::OSDK::WayPointSettings>& waypointList, int responseTimeout, dji_sdk::MissionWaypointTask& waypointTask)
@@ -439,14 +375,14 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "Mission Control");
      
 
-    // FlightData flightData;
+     FlightData flightData;
 
 
     MissionControl missionControl;
 
     // ros::spinOnce();
 
-    // missionControl.SetGPSPosition(flightData.GetGPSPosition());
+     missionControl.SetGPSPosition(flightData.GetGPSPosition());
 
     missionControl.Activate();
 
