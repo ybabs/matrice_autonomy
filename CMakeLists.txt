@@ -43,7 +43,7 @@ add_dependencies(xbox_control dji_sdk_generate_messages_cpp)
 #add_dependencies(flight_data dji_sdk_generate_messages_cpp)
 
 # specify executables for the sensor data collection package
-add_executable(mission_control src/mission_control.cpp src/flight_data.cpp)
+add_executable(mission_control src/mission_control.cpp src/flight_data.cpp  src/mobile_transmission.cpp)
 
 target_link_libraries(mission_control ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
 

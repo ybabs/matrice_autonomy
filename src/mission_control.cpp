@@ -377,7 +377,9 @@ int main(int argc, char** argv)
 
      FlightData flightData;
 
+     MobileTransmission mobileTransmission;
 
+     
     MissionControl missionControl;
 
     // ros::spinOnce();
@@ -387,6 +389,8 @@ int main(int argc, char** argv)
     missionControl.Activate();
 
     missionControl.ObtainControl();
+
+  
     
     uint8_t waypointSides = 6;
     int responseTimeout = 1;

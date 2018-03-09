@@ -2,6 +2,7 @@
 #define MISSION_CONTROL_H
 
 #include "matrice_autonomy/flight_data.h"
+#include "matrice_autonomy/mobile_transmission.h"
 #include <iostream>
 
 // Include other services.
