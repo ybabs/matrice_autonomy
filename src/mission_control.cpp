@@ -21,10 +21,6 @@ MissionControl::MissionControl()
 
 //     // Call Control Authority
 //     ObtainControl();
-
-   
-    
-
     
 }
 
@@ -377,8 +373,7 @@ int main(int argc, char** argv)
 
      FlightData flightData;
 
-     MobileTransmission mobileTransmission;
-
+     MobileComm mobileCommunication;
      
     MissionControl missionControl;
 
