@@ -10,6 +10,7 @@
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Float32.h>
+#include "matrice_autonomy/mobile_comm.h"
 
 // Controller Includes
 #include <sensor_msgs/Joy.h>
@@ -68,12 +69,17 @@ class FlightData
   // Flight status of the UAV 
   uint8_t flight_status;
 
-  // Height above takeoff
-  std_msgs::Float32 takeoff_height;
+
   // Drone Attitude as a quaternion
   geometry_msgs::Quaternion attitude_data;
   // Battery State
   int batteryLeft;
+
+  // Velocity Data
+  geometry_msgs::Vector3Stamped velocity_data;
+
+    // Height above takeoff
+   float takeoff_height;
   
 
     // Callbacks to return flight data
@@ -87,7 +93,7 @@ class FlightData
   void imu_callback(const sensor_msgs::Imu::ConstPtr& msg);
  // return flight status data
   void flight_status_callback(const std_msgs::UInt8::ConstPtr& msg);
-  // return value of RC Channels
+  // return value of RC Channelss
   void lightbridge_callback(const sensor_msgs::Joy::ConstPtr& joy); // Subscribe to Lightbridge Data
 // convert Attitude data from quaternion to Euler angles
  geometry_msgs::Vector3 attitudeEuler(geometry_msgs::Quaternion attitude_quat);
@@ -95,6 +101,12 @@ class FlightData
  void checkLightbridgeControlMode();
  // battery state callback
  void batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg);
+
+void height_callback(const std_msgs::Float32::ConstPtr& msg);
+
+void velocity_callback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
+// To send FLight Data To the Tablet.
+ MobileComm mobileCommManager;
 
 
  /* Subscribers */
@@ -105,6 +117,9 @@ class FlightData
    ros::Subscriber imu_sub;
    ros::Subscriber lightbridge_sub;
    ros::Subscriber batteryState_sub;
+   ros::Subscriber velocity_sub;
+   ros::Subscriber height_sub;
+   
 
 
 

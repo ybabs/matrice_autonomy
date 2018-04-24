@@ -16,7 +16,7 @@ MissionControl::MissionControl()
     drone_activation_service = nh.serviceClient<dji_sdk::Activation>("dji_sdk/activation");
     mobile_data_service = nh.serviceClient<dji_sdk::SendMobileData>("dji_sdk/send_data_to_mobile");
 
-    mobile_data_subscriber = nh.subscribe<dji_sdk::MobileData>("dji_sdk/from_mobile_data", 10, &MissionControl::MobileDataSubscriberCallback, this);
+   // mobile_data_subscriber = nh.subscribe<dji_sdk::MobileData>("dji_sdk/from_mobile_data", 10, &MissionControl::MobileDataSubscriberCallback, this);
     gps_sub = nh.subscribe("dji_sdk/gps_position", 10, &MissionControl::gps_callback, this);
 
     data_to_mobile[10] = {0};
@@ -28,41 +28,6 @@ MissionControl::MissionControl()
 //     // Call Control Authority
 //     ObtainControl();
     
-}
-
-void MissionControl::SendDataToMobile(unsigned char* data_to_mobile)
-{
-    dji_sdk::SendMobileData mobile_data;
-
-    mobile_data.request.data.resize(10);
-    memcpy(&mobile_data.request.data[0], data_to_mobile, 10 );
-
-    mobile_data_service.call(mobile_data);
-
-    bool mobile_response = mobile_data.response.result;
-   
-
-    ROS_INFO_STREAM("Sent: " <<  mobile_data.request.data[0]<< mobile_data.request.data[1]);
-   
-    ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_response);
-
-}
-
-// Overloaded Function
-
-void MissionControl::SendDataToMobile(AckReturnToMobile returnMobileAck)
-{
-    dji_sdk::SendMobileData mobile_data;
-
-    mobile_data.request.data.resize(sizeof(AckReturnToMobile));
-    memcpy(&mobile_data.request.data[0], (uint8_t *)(&returnMobileAck), sizeof(AckReturnToMobile));
-
-    mobile_data_service.call(mobile_data);
-
-    bool mobile_response = mobile_data.response.result;
-      
-    ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_response);
-
 }
 
 void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::ConstPtr& mobile_data)
@@ -179,22 +144,6 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
 
 }
 
-void MissionControl:: SendText(std::string string_to_mobile)
-{
-    dji_sdk::SendMobileData mobile_data;
-    mobile_data.request.data.resize(sizeof(string_to_mobile));
-
-    memcpy(&mobile_data.request.data[0], &string_to_mobile, sizeof(string_to_mobile));
-    mobile_data_service.call(mobile_data);
-
-    bool mobile_string_response = mobile_data.response.result;
-
-   // ROS_INFO("Sent: %s ",  mobile_data.request.data);
-   
-    ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_string_response);
-
-
-}
 
 void MissionControl::gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
@@ -553,9 +502,7 @@ int main(int argc, char** argv)
     missionControl.Activate();
 
     missionControl.ObtainControl();
-
-   
-    
+       
     //uint8_t waypointSides = 6;
    // int responseTimeout = 1;
     //missionControl.RunWaypointMission(waypointSides, responseTimeout);

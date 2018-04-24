@@ -5,8 +5,6 @@
 #include <dji_sdk/dji_sdk.h>
 #include <dji_sdk/MobileData.h>
 #include <dji_sdk/SendMobileData.h>
-#include "matrice_autonomy/mission_control.h"
-#include "matrice_autonomy/flight_data.h"
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -32,7 +30,6 @@ class MobileComm
     private:
     ros::ServiceClient mobile_data_service;        // Services
     ros::Subscriber mobile_data_subscriber; // Data Subscribe
-    unsigned char data_to_mobile[10];
     std::string string_to_mobile; 
     dji_sdk::MobileData data_from_mobile;
    
@@ -45,7 +42,7 @@ class MobileComm
     void SendDataToMobile(unsigned char* data_to_mobile);
     void SendDataToMobile(AckReturnToMobile returnMobileAck);
     void SendText(std::string data_to_mobile);
-    void MobileDataSubscriberCallback(const dji_sdk::MobileData::ConstPtr& from_mobile_data);
+   
     
 
 };

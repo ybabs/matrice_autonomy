@@ -10,6 +10,8 @@ FlightData::FlightData()
    imu_sub = fnh.subscribe("dji_sdk/imu", 10, &FlightData::imu_callback, this);
    batteryState_sub = fnh.subscribe("dji_sdk/battery_state", 10, &FlightData::batteryState_callback, this);
    lightbridge_sub = fnh.subscribe("/dji_sdk/rc", 10, &FlightData::lightbridge_callback, this);
+   height_sub = fnh.subscribe("/dji_sdk/height_above_takeoff",10, &FlightData::height_callback, this);
+   velocity_sub = fnh.subscribe("/dji_sdk/velocity", 10,  &FlightData::velocity_callback, this);
 }
 
 void FlightData::attitude_callback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
@@ -24,14 +26,49 @@ sensor_msgs::NavSatFix FlightData::GetGPSPosition()
 
     ROS_INFO("GPS Getter %f , %f , %f",  current_gps_location.latitude,  current_gps_location.longitude, current_gps_location.altitude);
     return current_gps_location;
-    
-  
+      
 }
+
+
+void FlightData::velocity_callback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
+{
+    
+    velocity_data.vector = msg->vector;
+    velocity_data.header = msg->header;
+
+    unsigned char velocity_data_to_mobile [3] = {0};
+    velocity_data_to_mobile[0] = 0x01;
+    velocity_data_to_mobile[1] = (unsigned char) velocity_data.vector.x;
+    velocity_data_to_mobile[2] = (unsigned char) velocity_data.vector.y;
+
+    mobileCommManager.SendDataToMobile(velocity_data_to_mobile);
+
+}
+
+void FlightData::height_callback(const std_msgs::Float32::ConstPtr& msg)
+{
+    takeoff_height = msg->data;
+
+    unsigned char height_data_to_mobile [10] = {0};
+    height_data_to_mobile[0] = 0x04;
+    height_data_to_mobile[1] = (unsigned char) takeoff_height; 
+
+    mobileCommManager.SendDataToMobile(height_data_to_mobile);
+
+}
+
+
 
 void FlightData::batteryState_callback(const sensor_msgs::BatteryState::ConstPtr& msg)
 {
   batteryLeft = msg->percentage;
   ROS_INFO_ONCE("Battery Life: %d %%", batteryLeft);
+
+  unsigned char battery_data_to_mobile [2] = {0};
+  battery_data_to_mobile[0] = 0x02;
+  battery_data_to_mobile[1] = (unsigned char) batteryLeft;
+
+  mobileCommManager.SendDataToMobile(battery_data_to_mobile);
 }
 
 void FlightData::gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
@@ -48,6 +85,11 @@ void FlightData::gps_health_callback(const std_msgs::UInt8::ConstPtr& msg)
 {
    gps_health = msg->data;
    ROS_INFO_ONCE ("GPS Health: %i", gps_health);
+
+   unsigned char gps_health_to_mobile [2] = {0};
+   gps_health_to_mobile[0] = 0x03;
+   gps_health_to_mobile[1] = (unsigned char) gps_health;
+   mobileCommManager.SendDataToMobile(gps_health_to_mobile);
 }
 
 void FlightData::imu_callback(const sensor_msgs::Imu::ConstPtr& msg)

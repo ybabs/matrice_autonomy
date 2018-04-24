@@ -1,12 +1,11 @@
 #ifndef MISSION_CONTROL_H
 #define MISSION_CONTROL_H
 
-//#include "matrice_autonomy/mobile_comm.h"
+#include "matrice_autonomy/mobile_comm.h"
 #include <iostream>
 #include <dji_sdk/dji_sdk.h>
 #include <dji_sdk/MobileData.h>
 #include <dji_sdk/SendMobileData.h>
-#include "matrice_autonomy/mission_control.h"
 #include "matrice_autonomy/flight_data.h"
 #include <iostream>
 #include <cstring>
@@ -19,12 +18,7 @@
 // ROS Include
 #include <ros/ros.h>
 
-#pragma pack(1)
-typedef struct AckReturnToMobile{
-  uint16_t cmdID;
-  uint16_t ack;
-} AckReturnToMobile;
-#pragma pack()
+#define PI (double) 3.141592653589793
 
 
 // Include other services.
@@ -73,13 +67,13 @@ public:
 
     void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg);
 
-    void SendDataToMobile(unsigned char* data_to_mobile);
+    // void SendDataToMobile(unsigned char* data_to_mobile);
 
-    void SendDataToMobile(AckReturnToMobile returnMobileAck);
+    // void SendDataToMobile(AckReturnToMobile returnMobileAck);
 
-    void SendText(std::string data_to_mobile);
+    // void SendText(std::string data_to_mobile);
 
-    void MobileDataSubscriberCallback(const dji_sdk::MobileData::ConstPtr& from_mobile_data);
+   void MobileDataSubscriberCallback(const dji_sdk::MobileData::ConstPtr& from_mobile_data);
 
     
     
