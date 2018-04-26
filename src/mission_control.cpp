@@ -16,17 +16,25 @@ MissionControl::MissionControl()
     drone_activation_service = nh.serviceClient<dji_sdk::Activation>("dji_sdk/activation");
     mobile_data_service = nh.serviceClient<dji_sdk::SendMobileData>("dji_sdk/send_data_to_mobile");
 
-   // mobile_data_subscriber = nh.subscribe<dji_sdk::MobileData>("dji_sdk/from_mobile_data", 10, &MissionControl::MobileDataSubscriberCallback, this);
+    mobile_data_subscriber = nh.subscribe<dji_sdk::MobileData>("dji_sdk/from_mobile_data", 10, &MissionControl::MobileDataSubscriberCallback, this);
     gps_sub = nh.subscribe("dji_sdk/gps_position", 10, &MissionControl::gps_callback, this);
 
     data_to_mobile[10] = {0};
     waypoint_index = 1;
 
-//    // Activate APP;
-//     Activate();
+     latitude = 0;
+     longitude = 0;
+     altitude = 0;
+     speed = 0;
 
-//     // Call Control Authority
-//     ObtainControl();
+     latitude_array[8] = {0};
+     longitude_array[8] = {0};
+     altitude_array[4] = {0};
+     orientation = 0;
+     speed_array[4] = {0};
+     missionEnd = 0;
+
+
     
 }
 
@@ -44,9 +52,7 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
 
     unsigned char CMD = data_from_mobile.data[0];
 
-    std::vector<DJI::OSDK::WayPointSettings> flightWaypointList;
-
-    switch(CMD)
+      switch(CMD)
     {
 
         case 0x01:
@@ -73,41 +79,36 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
         case 0x2f:
         { 
             ROS_INFO("Waypoints Recieved");
-            double latitude;
-            double longitude;
-            float altitude;
-            float speed;
+
 
             WayPointSettings current_waypoint;
             SetWayPointDefaults(&current_waypoint);
 
-            unsigned char latitude_array[8] = {0};
-            unsigned char longitude_array[8] = {0};
-            unsigned char altitude_array[4] = {0};
-            unsigned char orientation;
-            unsigned char speed_array[4] = {0};
-            unsigned char missionEnd = 0;
 
-            memcpy(&flight_data, &data_from_mobile.data, sizeof(data_from_mobile));
+            for(int i = 0; i < sizeof(latitude_array); i ++)
+            {
+                 latitude_array [i] = data_from_mobile.data[i + 1];
+                 
+          
+            }
 
             for(int i = 0; i < sizeof(longitude_array); i ++)
             {
-                longitude_array [i] = flight_data[i + 10] ;
+                longitude_array [i] = data_from_mobile.data[i + 9] ;
             }
 
             for(int i = 0; i < sizeof(altitude_array); i ++)
             {
-                altitude_array [i] = flight_data[i + 18] ;
+                altitude_array [i] = data_from_mobile.data[i + 17] ;
             }
 
-            orientation = flight_data[22];
+            orientation = data_from_mobile.data[21];
 
             for(int i = 0; i < sizeof(speed_array); i++)
             {
-                speed_array [i + 23];
+               speed_array[i] = data_from_mobile.data[i + 22];
             }
-
-            missionEnd = flight_data[27];
+            missionEnd = data_from_mobile.data[26];
 
 
             std::reverse(std::begin(latitude_array), std::end(latitude_array));
@@ -118,6 +119,7 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
             std::memcpy(&latitude, latitude_array, sizeof (double));
             std::memcpy(&longitude, longitude_array, sizeof (double));
             std::memcpy(&altitude, altitude_array, sizeof(float));
+            std::memcpy(&speed, speed_array, sizeof(float));
             
             current_waypoint.latitude = latitude;
             current_waypoint.longitude = longitude;
@@ -125,8 +127,15 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
             current_waypoint.index = waypoint_index;
             flightWaypointList.push_back(current_waypoint);
 
-           waypoint_index++;
-            
+            waypoint_index++;
+
+            std::cout <<std::fixed << latitude <<std::endl;
+            std::cout <<std::fixed << longitude << std::endl;
+            std::cout <<std::fixed << altitude << std::endl;
+            std::cout << std::fixed << speed << std::endl;
+            std::cout << static_cast<unsigned>(orientation) << std::endl;
+            std::cout << static_cast<unsigned>(missionEnd) << std::endl;
+          
             break;
         }
 
@@ -304,18 +313,18 @@ bool MissionControl::RunWaypointMission(uint8_t numWaypoints, int responseTimeou
     dji_sdk::MissionWaypointTask waypointTask;
     SetWayPointInitDefaults(waypointTask);
 
-    // create Waypoints here::
-    //TODO: Call another method here to generate number of waypoints
-    float64_t increment = 0.000001 / PI * 180;
-    float32_t start_altitude = 10;
-    ROS_INFO( "Creating waypoints ... \n");
+    // // create Waypoints here::
+    // //TODO: Call another method here to generate number of waypoints
+    // float64_t increment = 0.000001 / PI * 180;
+    // float32_t start_altitude = 10;
+    // ROS_INFO( "Creating waypoints ... \n");
 
-    std::vector<WayPointSettings> generatedWaypoints = CreateWaypoints(numWaypoints, increment, start_altitude);
+    // std::vector<WayPointSettings> generatedWaypoints = CreateWaypoints(numWaypoints, increment, start_altitude);
 
-  ROS_INFO("Number of Waypoints created: %lu", generatedWaypoints.size());
+  ROS_INFO("Number of Waypoints created: %lu", flightWaypointList.size());
     /// Upload Waypoints;
     ROS_INFO("Uploading Waypoints ... \n");
-    UploadWaypoints(generatedWaypoints, responseTimeout, waypointTask);
+    UploadWaypoints(flightWaypointList, responseTimeout, waypointTask);
 
     // initialise Mission:
     ROS_INFO("Initialising Mission ... \n");

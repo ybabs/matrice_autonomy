@@ -97,6 +97,19 @@ public:
     sensor_msgs::NavSatFix gps_pos;
     unsigned char data_to_mobile[10];
     int waypoint_index;
+    std::vector<DJI::OSDK::WayPointSettings> flightWaypointList;
+
+    double latitude;
+    double longitude;
+    float altitude;
+    float speed;
+
+    unsigned char latitude_array[8] = {0};
+    unsigned char longitude_array[8] = {0};
+    unsigned char altitude_array[4] = {0};
+    unsigned char orientation;
+    unsigned char speed_array[4] = {0};
+    unsigned char missionEnd = 0;
 
     
 

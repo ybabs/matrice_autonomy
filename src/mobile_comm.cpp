@@ -23,7 +23,9 @@ void MobileComm::SendDataToMobile(unsigned char* data_to_mobile)
     bool mobile_response = mobile_data.response.result;
    
 
-    ROS_INFO_STREAM("Sent: " <<  mobile_data.request.data[0]<< mobile_data.request.data[1]);
+   // ROS_INFO_STREAM("Sent: " <<  mobile_data.request.data[0]<< mobile_data.request.data[1]);
+
+   std::cout<<  static_cast<unsigned>(mobile_data.request.data[1]) << std::endl;
    
     ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_response);
 
@@ -42,7 +44,7 @@ void MobileComm::SendDataToMobile(AckReturnToMobile returnMobileAck)
 
     bool mobile_response = mobile_data.response.result;
       
-    ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_response);
+   // ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_response);
 
 }
 
