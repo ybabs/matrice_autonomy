@@ -61,7 +61,7 @@ void MobileComm:: SendText(std::string string_to_mobile)
 
    // ROS_INFO("Sent: %s ",  mobile_data.request.data);
    
-    ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_string_response);
+   // ROS_INFO("SEND DATA TO MOBILE RESPONSE %i", mobile_string_response);
 
 
 }

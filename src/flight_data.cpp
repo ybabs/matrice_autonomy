@@ -41,7 +41,7 @@ void FlightData::velocity_callback(const geometry_msgs::Vector3Stamped::ConstPtr
     velocity_data_to_mobile[1] = (unsigned char) velocity_data.vector.x;
     velocity_data_to_mobile[2] = (unsigned char) velocity_data.vector.y;
 
-   // mobileCommManager.SendDataToMobile(velocity_data_to_mobile);
+    mobileCommManager.SendDataToMobile(velocity_data_to_mobile);
 
 }
 
@@ -53,7 +53,7 @@ void FlightData::height_callback(const std_msgs::Float32::ConstPtr& msg)
     height_data_to_mobile[0] = 0x04;
     height_data_to_mobile[1] = (unsigned char) takeoff_height; 
 
-   // mobileCommManager.SendDataToMobile(height_data_to_mobile);
+    mobileCommManager.SendDataToMobile(height_data_to_mobile);
 
 }
 
@@ -68,7 +68,7 @@ void FlightData::batteryState_callback(const sensor_msgs::BatteryState::ConstPtr
   battery_data_to_mobile[0] = 0x02;
   battery_data_to_mobile[1] = (unsigned char) batteryLeft;
 
- // mobileCommManager.SendDataToMobile(battery_data_to_mobile);
+  mobileCommManager.SendDataToMobile(battery_data_to_mobile);
 }
 
 void FlightData::gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
@@ -76,6 +76,17 @@ void FlightData::gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
   current_gps_location.latitude = msg->latitude;
   current_gps_location.longitude = msg->longitude;
   current_gps_location.altitude = msg->altitude;
+  
+
+//   unsigned char gps_location_to_mobile [4] = {0};
+//   gps_location_to_mobile[0] = 0x05;
+//   gps_location_to_mobile[1] = (unsigned char) current_gps_location.latitude;
+//   gps_location_to_mobile[2] = (unsigned char) current_gps_location.longitude;
+//   //gps_location_to_mobile[3] = (unsigned char) current_gps_location.altitude;
+  
+//   mobileCommManager.SendDataToMobile(gps_location_to_mobile);
+
+  
 
   ROS_INFO_ONCE("GPS Location %f , %f , %f",  current_gps_location.latitude,  current_gps_location.longitude, current_gps_location.altitude);
 
@@ -89,7 +100,7 @@ void FlightData::gps_health_callback(const std_msgs::UInt8::ConstPtr& msg)
    unsigned char gps_health_to_mobile [2] = {0};
    gps_health_to_mobile[0] = 0x03;
    gps_health_to_mobile[1] = (unsigned char) gps_health;
-  // mobileCommManager.SendDataToMobile(gps_health_to_mobile);
+   mobileCommManager.SendDataToMobile(gps_health_to_mobile);
 }
 
 void FlightData::imu_callback(const sensor_msgs::Imu::ConstPtr& msg)

@@ -55,13 +55,9 @@ public:
 
     void SetWayPointInitDefaults(dji_sdk::MissionWaypointTask& wayPointTask);
 
-    std::vector<DJI::OSDK::WayPointSettings> CreateWaypoints(int numWaypoints, DJI::OSDK::float64_t distanceIncrement, DJI::OSDK::float32_t start_alt);
-
-    std::vector<DJI::OSDK::WayPointSettings> GeneratePolygon(DJI::OSDK::WayPointSettings* start_data, DJI::OSDK::float64_t distanceIncrement, int numberOfWaypoints);
-
     void UploadWaypoints(std::vector<DJI::OSDK::WayPointSettings>& wayPoint_list, int responseTimeout, dji_sdk::MissionWaypointTask& waypointTask);
 
-    bool RunWaypointMission(uint8_t numWaypoints, int responseTimeout);
+    bool RunWaypointMission(int responseTimeout);
 
     void SetGPSPosition(sensor_msgs::NavSatFix);
 
@@ -97,7 +93,15 @@ public:
     sensor_msgs::NavSatFix gps_pos;
     unsigned char data_to_mobile[10];
     int waypoint_index;
+
+// timeout of response for running mission;
+    int responseTimeout;
+
+    // Vector to store the waypoints
     std::vector<DJI::OSDK::WayPointSettings> flightWaypointList;
+
+    // Waypoint task to set Waypoint options for the drone
+     dji_sdk::MissionWaypointTask waypointTask;
 
     double latitude;
     double longitude;

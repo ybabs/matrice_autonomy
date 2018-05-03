@@ -62,6 +62,8 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
 
         }
 
+       /* Abort Button pressed on the app runs here as well. 
+       Default behaviour when user presses abort is to go back home. */
         case 0x02:
         {
             GoHome();
@@ -129,14 +131,65 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
 
             waypoint_index++;
 
-            std::cout <<std::fixed << latitude <<std::endl;
-            std::cout <<std::fixed << longitude << std::endl;
-            std::cout <<std::fixed << altitude << std::endl;
-            std::cout << std::fixed << speed << std::endl;
-            std::cout << static_cast<unsigned>(orientation) << std::endl;
-            std::cout << static_cast<unsigned>(missionEnd) << std::endl;
+            switch(missionEnd)
+            {
+                case 1:  // NO ACTION
+                waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_NO_ACTION;
+                break;
+
+                case 2: // WAYPOINT // Drone will go  to first waypoint
+                 waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_RETURN_TO_POINT;
+                break;
+
+                case 3:  // RETURN HOME
+                 waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_RETURN_TO_HOME;
+                break;
+
+                case 4: // AUTOLAND
+                waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_AUTO_LANDING;
+                break;
+
+                default:
+                break;
+            }
+
+            switch(orientation)
+            {
+                case 1: // Lock as Initial value
+                waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_LOCK;
+                break;
+
+                case 2: // Auto Mode.. Point to next waypoint
+                waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_AUTO;
+                break;
+
+                case 3: // Use Waypoint's Yaw
+                 waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_WAYPOINT;
+                break;
+
+                case 4: // Use RC to control Yaw at waypoint
+                 waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_RC;
+
+                break;
+
+                default:
+                break;
+
+            }
+
+            // std::cout <<std::fixed << latitude <<std::endl;
+            // std::cout <<std::fixed << longitude << std::endl;
+            // std::cout <<std::fixed << altitude << std::endl;
+            // std::cout << std::fixed << speed << std::endl;
+            // std::cout << static_cast<unsigned>(orientation) << std::endl;
+            // std::cout << static_cast<unsigned>(missionEnd) << std::endl;
           
             break;
+        }
+
+        case 0x1A:
+        {
+            RunWaypointMission(responseTimeout);
         }
 
 
@@ -211,77 +264,17 @@ void::MissionControl::SetWayPointDefaults(WayPointSettings* waypoint)
 
 void MissionControl::SetWayPointInitDefaults(dji_sdk::MissionWaypointTask& waypointTask)
 {
+    // Heading and Yaw mode are set by the Application. EVerything else is set to default here.
     waypointTask.velocity_range = 10;
     waypointTask.idle_velocity = 5;
-    waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_NO_ACTION;
+   // waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_NO_ACTION;
     waypointTask.mission_exec_times = 1;
-    waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_AUTO;
+    //waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_AUTO;
     waypointTask.trace_mode = dji_sdk::MissionWaypointTask::TRACE_POINT;
     waypointTask.action_on_rc_lost = dji_sdk::MissionWaypointTask::ACTION_AUTO;
     waypointTask.gimbal_pitch_mode = dji_sdk::MissionWaypointTask::GIMBAL_PITCH_FREE;
 
 }
-
-std::vector<DJI::OSDK::WayPointSettings> MissionControl::GeneratePolygon(WayPointSettings* startData, float64_t increment, int numWaypoints)
-{
-    // Circular waypoint Polygon could be drawn here as well
-
-    // vector to stoe waypoints in 
-    std::vector<DJI::OSDK::WayPointSettings> waypointList;
-
-    // Create equal number of angles
-    float64_t angle = 2 * PI / numWaypoints;
-    
-    //first waypoint
-    startData->index = 0;
-    waypointList.push_back(*startData);
-
-    // Generate points here. Integrate the Aviation formulary method here later on
-    for(int i = 1; i < numWaypoints; i++)
-    {
-        WayPointSettings current_waypoint;
-
-        WayPointSettings* previous_waypoint = &waypointList[i - 1];
-        SetWayPointDefaults(&current_waypoint);
-
-        current_waypoint.index = i;
-        current_waypoint.latitude = (previous_waypoint->latitude + (increment * cos(i * angle)));
-        current_waypoint.longitude = (previous_waypoint->longitude + (increment * sin(i * angle)));
-        current_waypoint.altitude = (previous_waypoint->altitude + 1);
-        
-        waypointList.push_back(current_waypoint);           
-    
-    }
-
-    startData->index = numWaypoints;
-    waypointList.push_back(*startData);
-
-    return waypointList;
-    
-}    
-
-
- std::vector<DJI::OSDK::WayPointSettings> MissionControl:: CreateWaypoints(int numWaypoints, DJI::OSDK::float64_t distanceIncrement, DJI::OSDK::float32_t start_altitude)
- {
-     // starting waypoint
-     WayPointSettings startWaypoint;
-     SetWayPointDefaults(&startWaypoint);
-
-     // sensor_msgs::NavSatFix gps_pos = flightData->GetGPSPosition();
-    
-    // set starting waypoint latitude as current waypoint
-     startWaypoint.latitude = gps_pos.latitude;
-     startWaypoint.longitude = gps_pos.longitude;
-     startWaypoint.altitude = start_altitude;
-
-     ROS_INFO("Waypoint created at Here: %f , Lon: %f , Alt: %f \n", gps_pos.latitude, gps_pos.longitude, gps_pos.altitude );
-
-     std::vector<DJI::OSDK::WayPointSettings> waypointVector = GeneratePolygon(&startWaypoint, distanceIncrement, numWaypoints);
-
-     return waypointVector;
-
- }
-
 
 
 void MissionControl::UploadWaypoints(std::vector<DJI::OSDK::WayPointSettings>& waypointList, int responseTimeout, dji_sdk::MissionWaypointTask& waypointTask)
@@ -305,21 +298,11 @@ void MissionControl::UploadWaypoints(std::vector<DJI::OSDK::WayPointSettings>& w
     }
 }
 
-bool MissionControl::RunWaypointMission(uint8_t numWaypoints, int responseTimeout)
+bool MissionControl::RunWaypointMission(int responseTimeout)
 {
 
     ros::spinOnce();
-    // Initialise Waypoint Mission:
-    dji_sdk::MissionWaypointTask waypointTask;
     SetWayPointInitDefaults(waypointTask);
-
-    // // create Waypoints here::
-    // //TODO: Call another method here to generate number of waypoints
-    // float64_t increment = 0.000001 / PI * 180;
-    // float32_t start_altitude = 10;
-    // ROS_INFO( "Creating waypoints ... \n");
-
-    // std::vector<WayPointSettings> generatedWaypoints = CreateWaypoints(numWaypoints, increment, start_altitude);
 
   ROS_INFO("Number of Waypoints created: %lu", flightWaypointList.size());
     /// Upload Waypoints;
