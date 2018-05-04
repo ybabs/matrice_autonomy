@@ -127,9 +127,12 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
             current_waypoint.longitude = longitude;
             current_waypoint.altitude = altitude;
             current_waypoint.index = waypoint_index;
+            SetWayPointDefaults(&current_waypoint);
             flightWaypointList.push_back(current_waypoint);
 
             waypoint_index++;
+            // Set cruising speed of drone (between 2 and 15m/s)
+            waypointTask.idle_velocity = speed;
 
             switch(missionEnd)
             {
@@ -187,9 +190,17 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
             break;
         }
 
+      // Start Mission when Start Button is pressed on Drone
         case 0x1A:
         {
             RunWaypointMission(responseTimeout);
+        }
+
+        case 0x3F:
+        {
+            // Clear the vector storing waypoints.
+            flightWaypointList.empty();
+            ROS_INFO("Waypoints Cleared");
         }
 
 
@@ -265,8 +276,8 @@ void::MissionControl::SetWayPointDefaults(WayPointSettings* waypoint)
 void MissionControl::SetWayPointInitDefaults(dji_sdk::MissionWaypointTask& waypointTask)
 {
     // Heading and Yaw mode are set by the Application. EVerything else is set to default here.
-    waypointTask.velocity_range = 10;
-    waypointTask.idle_velocity = 5;
+    waypointTask.velocity_range = 15;
+    //waypointTask.idle_velocity = 5;
    // waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_NO_ACTION;
     waypointTask.mission_exec_times = 1;
     //waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_AUTO;
