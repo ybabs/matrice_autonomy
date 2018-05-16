@@ -78,6 +78,87 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
             break;
         }
 
+        case 0x4d:
+        {
+            ROS_INFO("Flight Parameters received");
+
+            for(int i = 0; i < sizeof(speed_array); i++)
+            {
+               speed_array[i] = data_from_mobile.data[i + 1];
+            }
+          
+            orientation = data_from_mobile.data[5];
+
+            missionEnd = data_from_mobile.data[6];
+ 
+            std::reverse(std::begin(speed_array), std::end(speed_array));
+           
+            std::memcpy(&speed, speed_array, sizeof(float));
+            // Set cruising speed of drone (between 2 and 15m/s)
+            waypointTask.idle_velocity = speed;
+
+             switch(missionEnd)
+            {
+                case 1:  // NO ACTION
+                waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_NO_ACTION;
+                std::cout << "NOTHING ACTION" << std::endl;
+                break;
+
+                case 2: // WAYPOINT // Drone will go  to first waypoint
+                 waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_RETURN_TO_POINT;
+                 std::cout << "FIRST WAYPOINT ACTION" << std::endl;
+
+                break;
+
+                case 3:  // RETURN HOME
+                 waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_RETURN_TO_HOME;
+                 std::cout << "RETURN HOME ACTION" << std::endl;
+                break;
+
+                case 4: // AUTOLAND
+                waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_AUTO_LANDING;
+                std::cout << "LAND ACTION" << std::endl;
+                break;
+
+                default:
+                break;
+            }
+
+            switch(orientation)
+            {
+                case 1: // Lock as Initial value
+                waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_LOCK;
+                std::cout << "YAW MODE" << std::endl;
+                break;
+
+                case 2: // Auto Mode.. Point to next waypoint
+                waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_AUTO;
+                std::cout << "NEXT MODE" << std::endl;
+                break;
+
+                case 3: // Use Waypoint's Yaw
+                 waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_WAYPOINT;
+                 std::cout << "WAYPOINT MODE" << std::endl;
+                break;
+
+                case 4: // Use RC to control Yaw at waypoint
+                std::cout << "RC MODE" << std::endl;
+                 waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_RC;
+
+                break;
+
+                default:
+                break;
+
+            }
+
+            std::cout << std::fixed << speed << std::endl;
+            std::cout << static_cast<unsigned>(orientation) << std::endl;
+            std::cout << static_cast<unsigned>(missionEnd) << std::endl;
+            break;
+
+        }
+
         case 0x2f:
         { 
             ROS_INFO("Waypoints Recieved");
@@ -89,103 +170,48 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
 
             for(int i = 0; i < sizeof(latitude_array); i ++)
             {
-                 latitude_array [i] = data_from_mobile.data[i + 1];
-                 
+                 latitude_array [i] = data_from_mobile.data[i + 1];  
           
             }
 
             for(int i = 0; i < sizeof(longitude_array); i ++)
             {
                 longitude_array [i] = data_from_mobile.data[i + 9] ;
-            }
+            }   
 
             for(int i = 0; i < sizeof(altitude_array); i ++)
             {
                 altitude_array [i] = data_from_mobile.data[i + 17] ;
             }
-
-            orientation = data_from_mobile.data[21];
-
-            for(int i = 0; i < sizeof(speed_array); i++)
-            {
-               speed_array[i] = data_from_mobile.data[i + 22];
-            }
-            missionEnd = data_from_mobile.data[26];
+   
 
 
             std::reverse(std::begin(latitude_array), std::end(latitude_array));
             std::reverse(std::begin(longitude_array), std::end(longitude_array));
             std::reverse(std::begin(altitude_array), std::end(altitude_array));
-            std::reverse(std::begin(speed_array), std::end(speed_array));
 
             std::memcpy(&latitude, latitude_array, sizeof (double));
             std::memcpy(&longitude, longitude_array, sizeof (double));
             std::memcpy(&altitude, altitude_array, sizeof(float));
-            std::memcpy(&speed, speed_array, sizeof(float));
+           
             
             current_waypoint.latitude = latitude;
             current_waypoint.longitude = longitude;
             current_waypoint.altitude = altitude;
+            
             current_waypoint.index = waypoint_index;
             SetWayPointDefaults(&current_waypoint);
             flightWaypointList.push_back(current_waypoint);
 
             waypoint_index++;
-            // Set cruising speed of drone (between 2 and 15m/s)
-            waypointTask.idle_velocity = speed;
+            
 
-            switch(missionEnd)
-            {
-                case 1:  // NO ACTION
-                waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_NO_ACTION;
-                break;
+           
 
-                case 2: // WAYPOINT // Drone will go  to first waypoint
-                 waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_RETURN_TO_POINT;
-                break;
+             std::cout <<std::fixed << latitude <<std::endl;
+             std::cout <<std::fixed << longitude << std::endl;
+             std::cout <<std::fixed << altitude << std::endl;
 
-                case 3:  // RETURN HOME
-                 waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_RETURN_TO_HOME;
-                break;
-
-                case 4: // AUTOLAND
-                waypointTask.action_on_finish = dji_sdk::MissionWaypointTask::FINISH_AUTO_LANDING;
-                break;
-
-                default:
-                break;
-            }
-
-            switch(orientation)
-            {
-                case 1: // Lock as Initial value
-                waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_LOCK;
-                break;
-
-                case 2: // Auto Mode.. Point to next waypoint
-                waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_AUTO;
-                break;
-
-                case 3: // Use Waypoint's Yaw
-                 waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_WAYPOINT;
-                break;
-
-                case 4: // Use RC to control Yaw at waypoint
-                 waypointTask.yaw_mode = dji_sdk::MissionWaypointTask::YAW_MODE_RC;
-
-                break;
-
-                default:
-                break;
-
-            }
-
-            // std::cout <<std::fixed << latitude <<std::endl;
-            // std::cout <<std::fixed << longitude << std::endl;
-            // std::cout <<std::fixed << altitude << std::endl;
-            // std::cout << std::fixed << speed << std::endl;
-            // std::cout << static_cast<unsigned>(orientation) << std::endl;
-            // std::cout << static_cast<unsigned>(missionEnd) << std::endl;
           
             break;
         }
@@ -200,6 +226,8 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
         {
             // Clear the vector storing waypoints.
             flightWaypointList.empty();
+            waypointTask.mission_waypoint.empty();
+            
             ROS_INFO("Waypoints Cleared");
         }
 
