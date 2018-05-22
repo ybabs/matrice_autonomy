@@ -225,7 +225,7 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
         case 0x3F:
         {
             // Clear the vector storing waypoints.
-            flightWaypointList.empty();
+            flightWaypointList.clear();
             waypointTask.mission_waypoint.empty();
             
             ROS_INFO("Waypoints Cleared");
