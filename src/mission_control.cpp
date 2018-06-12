@@ -226,7 +226,7 @@ void MissionControl::MobileDataSubscriberCallback(const dji_sdk::MobileData::Con
         {
             // Clear the vector storing waypoints.
             flightWaypointList.clear();
-            waypointTask.mission_waypoint.empty();
+            waypointTask.mission_waypoint.clear();
             
             ROS_INFO("Waypoints Cleared");
         }
@@ -354,7 +354,8 @@ bool MissionControl::RunWaypointMission(int responseTimeout)
     {
        return false;
     }
-        unsigned char mission_start_code_OK [1] = {0xEC};
+        unsigned char mission_start_code_OK [1] = {0};
+        mission_start_code_OK [0] = 0x01;
 
      //Send code back to tablet
      mobileCommManager.SendDataToMobile(mission_start_code_OK);
@@ -407,8 +408,10 @@ bool MissionControl::InitWayPointMission(dji_sdk::MissionWaypointTask& waypointT
    uploadWaypointMission.request.waypoint_task = waypointTask;
 
    // To send back to tablet...
-   unsigned char waypoint_status_code_ERR [1] = {0xEA};
-   unsigned char waypoint_status_code_OK [1] = {0xEB};
+   unsigned char waypoint_status_code_ERR [1] = {0};
+    waypoint_status_code_ERR [0] = 0x02;
+   unsigned char waypoint_status_code_OK [1] = {0};
+    waypoint_status_code_OK [1] = {0x03};
 
    waypoint_upload_service.call(uploadWaypointMission);
    if(!uploadWaypointMission.response.result)
