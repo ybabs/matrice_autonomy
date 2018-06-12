@@ -69,4 +69,3 @@ void MobileComm:: SendText(std::string string_to_mobile)
 
 
 
-

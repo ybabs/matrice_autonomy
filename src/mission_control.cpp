@@ -354,7 +354,10 @@ bool MissionControl::RunWaypointMission(int responseTimeout)
     {
        return false;
     }
+        unsigned char mission_start_code_OK [1] = {0xEC};
 
+     //Send code back to tablet
+     mobileCommManager.SendDataToMobile(mission_start_code_OK);
     // Start Waypoint Mission
     MissionAction(DJI_MISSION_TYPE::WAYPOINT, MISSION_ACTION::START);
 
@@ -403,12 +406,18 @@ bool MissionControl::InitWayPointMission(dji_sdk::MissionWaypointTask& waypointT
    dji_sdk::MissionWpUpload uploadWaypointMission;
    uploadWaypointMission.request.waypoint_task = waypointTask;
 
+   // To send back to tablet...
+   unsigned char waypoint_status_code_ERR [1] = {0xEA};
+   unsigned char waypoint_status_code_OK [1] = {0xEB};
+
    waypoint_upload_service.call(uploadWaypointMission);
    if(!uploadWaypointMission.response.result)
    {
        ROS_WARN ( "Acknowledgment Info Set = %i id = %i", uploadWaypointMission.response.cmd_set, uploadWaypointMission.response.cmd_id);
 
        ROS_INFO("ACK.data: %i", uploadWaypointMission.response.ack_data);
+
+       mobileCommManager.SendDataToMobile(waypoint_status_code_ERR);
 
         ROS_ERROR("Couldn't upload waypoints");
 
@@ -418,6 +427,7 @@ bool MissionControl::InitWayPointMission(dji_sdk::MissionWaypointTask& waypointT
 
    else
    {
+       mobileCommManager.SendDataToMobile(waypoint_status_code_OK);
         ROS_INFO("Waypoints uploaded successfully");
         return true;
    }

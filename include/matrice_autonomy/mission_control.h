@@ -103,6 +103,9 @@ public:
     // Waypoint task to set Waypoint options for the drone
      dji_sdk::MissionWaypointTask waypointTask;
 
+     // To send FLight Data To the Tablet.
+    MobileComm mobileCommManager;
+
     double latitude;
     double longitude;
     float altitude;
